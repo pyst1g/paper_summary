@@ -1,0 +1,670 @@
+
+%%%%%%%
+\documentclass[dvipdfmx,11pt,notheorems]{beamer}
+
+\usepackage[noalphabet]{pxchfon}
+\setminchofont{ipam.ttf}  % IPA明朝
+\setgothicfont{ipag.ttf}  % IPAゴシック
+
+\usepackage{bxdpx-beamer}
+\usepackage{pxjahyper}
+\usepackage{minijs}
+\renewcommand{\kanjifamilydefault}{\gtdefault}
+
+
+\usetheme{Madrid}
+\usefonttheme{professionalfonts}
+\setbeamertemplate{frametitle}[default][center]
+\setbeamertemplate{navigation symbols}{}
+\setbeamercovered{transparent}
+\setbeamertemplate{footline}[page number]
+\setbeamerfont{footline}{size=\normalsize,series=\bfseries}
+\setbeamercolor{page number in head/foot}{fg=black}
+\setbeamertemplate{caption}[numbered]
+\renewcommand{\figurename}{図}
+\renewcommand{\tablename}{表}
+%\setbeamertemplate{page number in head/foot}{framenumber}
+
+\useoutertheme[subsection=false]{smoothbars}
+
+\usepackage{amsmath,amssymb}
+\usepackage{amsthm}
+\usepackage{amsfonts}
+\theoremstyle{definition}
+\newtheorem{theorem}{定理}
+\newtheorem{definition}{定義}
+\newtheorem{proposition}{命題}
+\newtheorem{lemma}{補題}
+\newtheorem{corollary}{系}
+\newtheorem{conjecture}{予想}
+\newtheorem*{remark}{Remark}
+\renewcommand{\proofname}{}
+
+
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage[utf8]{inputenc}
+\usepackage{otf}
+%\usepackage{lxfonts}
+\usepackage{bm}
+
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+%\newcommand{\backupbegin}{
+%\newcounter{framenumberappendix}
+%\setcounter{framenumberappendix}{\value{framenumber}}
+%}
+%\newcommand{\backupend}{
+%\addtocounter{framenumberappendix}{-\value{framenumber}}
+%\addtocounter{framenumber}{\value{framenumberappendix}}
+%}
+
+
+\title[英語論文]{Time-series clustering - A decade review}
+\author[佐野]{佐野 達也}
+%\institute[MMA]{情報数理研究室 B4}
+\date{}
+\setbeamertemplate{footline}[frame number]
+\begin{document}
+	
+	\begin{frame}[plain]\frametitle{}
+	\titlepage 
+\end{frame}
+
+\begin{frame}\frametitle{}
+このスライドは、\\
+Time-series clustering - A decade review\\
+(https://www.sciencedirect.com/science/article/pii/S0306437915000733)\\
+を自分なりにまとめ、一部補足を加えたものです。\\
+文章中にある[(番号)]表記のものは、Time-series clustering - A decade review内のReferences番号を意味します。
+
+\end{frame}
+
+\begin{frame}\frametitle{概要}
+``Time-series clustering - A decade review''は、時系列クラスタリングに焦点を当て、包括的レビューを行ったものです。\newline
+\newline
+この論文は、過去10年間(2006～2015)の時系列手法の効率性、品質、複雑性の改善傾向に関する最新の調査を示し、将来の研究のための新たな道筋を明らかにすることを目的としています。
+
+\end{frame}
+
+\AtBeginSection[]{
+\begin{frame}
+\tableofcontents[currentsection]
+\end{frame}
+}
+
+
+
+\begin{frame}\frametitle{}
+\tableofcontents
+\end{frame}
+
+
+
+
+\section{Chapter1 Introduction}
+
+\begin{frame}\frametitle{}
+\begin{itemize}
+\item
+クラウドコンピューティングやビッグデータの登場により、クラスタリングなどの教師無し学習によって大量のデータから知識を抜きだす研究が活発化している。
+\item
+時系列データのクラスタリングは多くの科学分野において、データアナリストが複雑で大規模なデータセットから貴重な情報を抽出するために使われている。
+\item ストレージやプロセッサの性能が向上したおかげで、実際のアプリケーションでは、長時間のデータを保持する機会ができた。(購買履歴や、株価、為替、気象データ等々)
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}\frametitle{クラスタリングとは？}
+\begin{itemize}
+\item 類似のデータを関連するグループもしくは同種のグループに配置することを目的としたデータマイニング手法。
+\item 教師無し学習に分類される。
+\end{itemize}
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale = 0.7]{decade_fig1.png}
+\end{center}
+\caption{2次元平面上でのクラスタリングの例}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}\frametitle{クラスタリングの目的}
+\begin{itemize}
+\item 時系列データベースには、パターン発見によって得られる貴重な情報が含まれている。時系列クラスタリングはそのようなパターンを発見する。
+\item 時系列データベースはサイズが非常に大きく、人の手で識別するには限界がある。クラスタリングは類似の時系列をクラスタ化することによって構造化する。
+\item 探索的データ解析で最も頻繁に使われるアプローチであり、他のデータマイニング手法の前処理として使われる。
+\item クラスタの構造を視覚的に表すことで、ユーザに迅速にデータ構造を理解させることができる。
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}\frametitle{時系列クラスタリングは難しい}
+時系列クラスタリングは一般的なクラスタリングと比べ、特に以下の2点に苦しんでいる。\\
+\begin{itemize}
+\item 高次元性\\
+時系列データの高次元性はクラスタリングの実行速度に多大な影響を与える。
+\item 類似度測定\\
+時系列データ同士の次元、位相の違いや外れ値、ノイズの処理などを考慮して類似度を考えなければならない。
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}\frametitle{時系列クラスタリングの3つの種類}
+\begin{itemize}
+\item whole time-series clustering(本論文ではここに焦点を当てる)\\
+時系列集合を類似度に基づいていくつかのクラスタに分割する。
+\item subsequence time-series clustering\\
+1本の（長い）時系列から部分系列を多数生成し、それらをクラスタリング。
+\item time point clustering\\
+?
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}\frametitle{どのような特徴を基にクラスタリングをするのか？}
+\begin{itemize}
+\item 形状ベース(shape-based)\\
+時系列データの形を基にクラスタリングする。
+生の時系列データを直接扱えるため、raw-data-basedなアプローチとも呼ばれている。
+\item 特性ベース(feature-based)\\
+生の時系列データを低次元の特徴ベクトルへ変換する。その特徴ベクトルを用いてクラスタリングする。
+\item モデルベース(model-based)\\
+各々の時系列にたいしてパラメトリックなモデルを適用しモデルパラメータを求める。
+そのモデルパラメータを適切なモデル距離を用いてクラスタリング。
+
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}\frametitle{時系列クラスタリングの4つの構成要素}
+\begin{itemize}
+\item 次元削減 → chapter2
+\item 類似尺度・距離尺度 → chapter3
+\item プロトタイプの定義 → chapter4
+\item クラスタリングアルゴリズム → chapter5
+\end{itemize}
+時系列クラスタリングは、扱うデータによって、上の複数、もしくは全てを組み合わせてクラスタリングを行う。
+\end{frame}
+
+
+\section{Chapter2 Time series representation(次元削減)}
+\begin{frame}\frametitle{次元削減とは}
+
+時系列の次元削減・・・生の時系列を近似や特徴抽出を行うことにより、低次元空間へ変換すること。
+\newline
+\newline
+\newline
+時系列データは高次元であることが多いため、次元削減は頻繁に用いられる。
+\end{frame}
+
+
+
+\begin{frame}\frametitle{なぜ次元削減をするのか？(3つの理由)}
+\begin{itemize}
+\item メモリサイズを減らす\\
+時系列データはサイズが大きく、生の時系列が全てメインメモリに収まらないときがあるので、データのメモリを減らす必要がある。
+\item 計算時間を減らす\\
+時系列に用いられる距離尺度は、データの長さに大きく依存する(時系列データの距離尺度として頻繁に使われるDTWは時系列の長さに対して2乗のオーダー)。
+\item ノイズの影響を減らす\\
+２つの生の時系列間の距離を測定すると、非常に直感的でない結果を得る可能性がある。\\
+理由として、いくつかの距離尺度は時系列データの歪みに対して非常に敏感であるため、クラスタリング結果として、ノイズの類似性に基づいてクラスタリングしてしまう可能性がある。
+
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}\frametitle{次元削減の4つのタイプ}
+\begin{itemize}
+\item Data adaptive
+時系列をいくつかのセグメントに分け、復元誤差を最小化するしようとする方法。\\
+主成分分析(PCA)や、Symbolic Aggregate ApproXimation(SAX)などがある。
+\item Non-data adaptive
+データの局所特性を考慮し、それに応じて近似表現を構築する。\\
+離散フーリエ変換(DFT)や、離散ウェーブレット変換(DWT)などがある。
+\item Model based
+確率的手法でデータを削減する。\\
+隠れマルコフモデル(HMM)や、自己回帰移動平均モデル(ARMAモデル)などがある。
+\item Data dictated
+上の3つのアプローチが次元の削減率をユーザが決めることができるが、このアプローチは圧縮率は自動で決められる。
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}\frametitle{手法の比較}
+H. Ding et al. [91] は8つの異なる次元削減メソッドを38の時系列データセットを用いてそのパフォーマンスを調べた。\\
+その結果、近年の次元削減メソッドの性能はほとんど差異がないことを示した。
+
+\end{frame}
+
+
+\section{Chapter3 Similarity/dissimilarity measures in time-series clustering(類似/距離尺度)}
+
+\begin{frame}{}
+\begin{itemize}
+\item クラスタリングの結果は扱う類似/距離尺度に大きく依存する。
+\item 時系列データには位相や長さが異なるデータなどを考慮する必要があり、時系列の類似性を適切に決定する必要がある。
+\item 時系列の類似度/非類似度の計算には大きく3つのアプローチに分かれる(次ページ)。
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{類似/非類似度計算の3つのアプローチ}
+\begin{itemize}
+\item 時点に基づいて類似の時系列を見つける\\
+時系列データを同じ時間点事に比較する。ユークリッド距離を用いることが多い。
+\item 形状に基づいて類似の時系列を見つける\\
+データにおいて、特定のパターンが発見される時刻というのはさほど重要ではない場合がある。そのような場合、形状に基づいて類似の時系列を用いることができる。\\
+これにより、時系列間の位相の違いを考慮することができる。
+\item 構造に基づいて類似の時系列を見つける\\
+隠れマルコフモデルやARMA過程によって得られたパラメータの類似度に基づいてクラスタリングする。\\
+翌日に株価が下落した後に増加傾向にある株式データのクラスタリングなど、同様の自己相関構造を持つ時系列をクラスタリングする。このアプローチは、長い時系列に適している(逆に、短い時系列には適していない)。
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{距離尺度に関する3つの議論}
+\begin{itemize}
+\item 最も効果的で正確なアプローチは、動的計画法(DP)に基づくものであることが示唆されている。しかし、DPを用いた距離尺度であるDTWは時系列の長さに対して2乗のオーダーであり、計算量の面で問題がある。よって、いくつかの制約を課して、実行速度を緩和する研究がされているが、速度と精度の間にはトレードオフが生じる。
+\item 類似度に関する研究で、大きな課題の1つとして、変形された時系列と距離尺度との非互換性が挙げられる。例えば、時系列解析に適用される一般的なアプローチの1つは、周波数領域に基づいているが、これを使用して時系列間の類似性を見つけることは困難である。
+\item ユークリッド距離及びDTWは、時系列クラスタリングにおける類似度測定の最も一般的な尺度である。
+\end{itemize}
+\end{frame}
+
+
+\section{Chapter4 Time-series cluster prototypes(クラスタの代表)}
+
+\begin{frame}
+プロトタイプ・・・クラスタを代表するデータ。セントロイドとも呼ぶ。\newline
+\newline
+プロトタイプを見つけることは、クラスタリングの中でも必要不可欠であり、k-Means法やk-Medoids法などの分割最適型クラスタリング(chapter5で扱う)では、プロトタイプの質がクラスタの質に大きく影響する。\\
+
+\end{frame}
+
+\begin{frame}\frametitle{プロトタイプの定義}
+プロトタイプの定義には、一般的に3つのアプローチがある。
+\begin{itemize}
+\item データの平均をプロトタイプとして扱う\\
+\item medoidをプロトタイプとして扱う
+\item local searchを用いてプロトタイプを定義する
+\end{itemize}
+以下でアプローチの内容を説明する。
+\end{frame}
+
+
+\begin{frame}\frametitle{データの平均をプロトタイプとして扱う}
+平均化・・・プロトタイプと、クラスタ内データとの距離の総和が最も短くなるようなプロトタイプを定義する。
+\begin{itemize}
+\item 長さが同じ時系列かつ、用いる距離尺度がnon-elastic distance(時系列同士
+を同じ時刻で比較する距離尺度。ユークリッド距離など)の場合、このアプローチを用いることが多い。\\
+\item ユークリッド距離を用いる場合、同じクラスタに属するデータを単純平均したものをプロトタイプとして定義している。\\
+すなわち、$i$番目のクラスタ$C_i$のプロトタイプ$V_i = \{V_{i1},V_{i2},...,V_{iT}\} $は、以下のように定義される。
+\begin{displaymath}
+V_{it} = \frac{1}{n} \sum_{j=1}^{|C_i|}x_{jt}, C_i = \{x_1,x_2,...,x_{|C_i|}\}
+\end{displaymath}
+\item elastic distanceにおいては単純平均をもちいることができず、複雑な計算が必要になる。
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}\frametitle{medoidをプロトタイプとして扱う}
+medoid・・・クラスタ内距離二乗和を最小にするクラスタ内のデータ(直感的には、クラスタ内で最も真ん中にあるデータをプロトタイプとしている)。
+\begin{itemize}
+\item 距離尺度がelastic distanceでもnon-elastic distanceでもこのアプローチを適用することができる。\\
+\item 外れ値に強いという特性を持つ。
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}\frametitle{local searchを用いてプロトタイプを定義する}
+local search・・・medoidを計算してから平均化のメソッドを用いる。\\
+
+\begin{itemize}
+\item 平均化は、ワーピングパスを基に計算する。
+\item 他の2つよりもプロトタイプの質が高い。
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}\frametitle{まとめ}
+\begin{itemize}
+\item クラスタの精度が低くなる問題の１つは、主に分割最適型クラスタリングにおいて、プロトタイプの定義や更新方法が不十分であることである。\\
+\item 正確でないプロトタイプはクラスタリングアルゴリズムの収束にも影響し、結果としてクラスタリングの質が落ちることになる。
+\end{itemize}
+\end{frame}
+
+
+\section{Chapter5 Time-series clustering algorithms(クラスタリングアルゴリズム)}
+
+\begin{frame}\frametitle{アルゴリズムの6つのグループ}
+クラスタリングアルゴリズムは大まかに、階層型、分割最適型、モデルベース、密度ベース、グリッドベース、マルチステップ型の６つに分かれている。\\
+以下で、1つ1つのアルゴリズムの中身、特性を見ていく。
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale = 0.7]{decade_fig2.png}
+\end{center}
+\caption{6つのアルゴリズム 出典:''Time-series clustering - A decade review'' p. 26}
+\end{figure}
+\end{frame}
+
+
+
+\begin{frame}\frametitle{階層的クラスタリング}
+階層的クラスタリング・・・データの類似/非類似度を利用してクラスタをマージ(凝集型)もしくは分割(分割型)をして階層を作る。\\
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale = 0.7]{decade_fig3.png}
+\end{center}
+\caption{階層的クラスタリングによって作られるデータ構造の例}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}\frametitle{階層的クラスタリング}
+\begin{itemize}
+\item メリット\\
+クラスタ数を事前に決める必要がない。\\
+可視化能力が高い。
+\item デメリット\\
+計算量がデータ数に対して2乗のオーダーであるため、データセットが大きい場合に適さない。
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}\frametitle{分割最適化クラスタリング}
+分割最適化クラスタリング・・・目的関数を決め、その目的関数を最適にする分割を求める方法。\\
+分割最適化クラスタリングの中でもっとも有名なk-Meansのアルゴリズムを以下に示す。\\
+\begin{algorithm}[H]
+\caption{k-Means法}
+\begin{algorithmic}[1]
+\STATE 初期分割$\Pi^{(0)}$を与え、クラスタ中心$(m_j^{0})_{j=1}^{k}$を求め、目的関数$Q(\Pi^{(0)})$を計算する。t=1を代入。
+\STATE それぞれのデータ点$a_i$について、$\pi_i$を$a_i$から最も近いクラスタに更新。
+\STATE 新しい$\Pi^{t}$に対して、クラスタの中心点$(m_j^{t})_{j=1}^{k}$を計算。
+\STATE $|Q(\Pi^{(t-1)})-Q(\Pi^{(t)})| < tol$を満たせば終了。そうでなければ、tに１を加算し、ステップ２に戻る。\\
+tolはあらかじめ設定した閾値。
+\end{algorithmic}
+\end{algorithm}
+\end{frame}
+
+
+\begin{frame}\frametitle{分割最適化クラスタリング}
+\begin{itemize}
+\item k-Medroids法はk-Means法とほとんど同じであるが、プロトタイプの更新方法がデータの平均ではなく、medoidになっている(chapter4)。
+\item k-Means法やk-Medroids法はデータが1つのクラスタに属している(他のクラスタには属していない)。これを「ハード」、もしくは「クリスプ」なクラスタリング手法と呼ぶ。
+\item それに対して、Fuzzy c-Means法や、Fuzzy c-Medroidsアルゴリズムは、各クラスタに対して帰属度(データが各クラスタに属する度合い)を持ち、「ソフト」、もしくは「ファジィ」なクラスタリング手法と呼ばれる。
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}\frametitle{モデルベースのクラスタリング}
+モデルベースのクラスタリング・・・クラスタに対してモデルを仮定し、それに適するようなクラスタを構成する。\\
+統計的なアプローチを用いることが多い。
+\end{frame}
+
+\begin{frame}\frametitle{モデルベースのクラスタリング}
+例:自己組織化マップ(SOM)
+\begin{itemize}
+\item 入力の高次元データを低次元(1または2次元を用いることが多い)の出力層に写像することによって入力データの類似度を出力層上で表現し、クラスタリングを行う。
+\item 直感的な説明はhttp://gaya.jp/spiking\_neuron/som.htmに載っている。
+\end{itemize}
+
+\end{frame}
+
+
+
+\begin{frame}\frametitle{モデルベースのクラスタリング}
+モデルベースのクラスタリングは、以下の2つのデメリットがある。
+\begin{itemize}
+\item パラメータなどをあらかじめ決めなければならない。
+\item 基本的に計算コストが高い。
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}\frametitle{密度ベースのクラスタリング}
+密度ベースのクラスタリング・・・データを密度の高い場所で分離する。\\
+例: Density-based spatiall clustering of applications with noise(DBSCAN)
+各々のデータをCore点、Reachable点、Outlierに分け、クラスタを形成する。\\
+アルゴリズムは次ページに乗せる。
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale = 0.7]{decade_fig4.png}
+\end{center}
+\caption{DBSCANによるクラスタリング(赤:Core点,黄:Reachable,青:Outlier) 出典:wikipedia(https://ja.wikipedia.org/wiki/DBSCAN)}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}\frametitle{密度ベースのクラスタリング}
+\begin{algorithm}[H]
+\caption{Density-based spatial clustering of applications with noise(DBSCAN)}
+\begin{algorithmic}[1]
+\STATE 全てのデータ点をOutlierに初期化。
+\STATE すべてのデータ点に対して、半径ε以内にminPts個の点がある場合、その点をCore点とし、半径ε以内のOutlierの点をReachableに変更する。
+\STATE あるCore点から到達可能なすべての点でクラスタを形成する。Core点からε内にあるCore点から到達可能な点も同一クラスタとする。
+\end{algorithmic}
+\end{algorithm}
+\end{frame}
+
+\begin{frame}\frametitle{グリッドベースのクラスタリング}
+グリッドベースのクラスタリング・・・空間を、グリッドを形成する有限個のセルに置き換え、セル上でクラスタリングを実行する。\\
+時系列で適用してる例がない(?)。
+
+\end{frame}
+
+
+\begin{frame}\frametitle{マルチステップクラスタリング}
+マルチステップクラスタリング・・・既存のクラスタリングの改善として、以下のようないくつかのアルゴリズムが提案されている。
+\begin{itemize}
+\item 3-PhaseTime series Clustering model (3PTC) [62]
+\item Two-step Time series Clustering(TTC) [211]
+\end{itemize}
+上の2つのアルゴリズムの概要を示す。
+\end{frame}
+
+\begin{frame}\frametitle{マルチステップクラスタリング}
+\begin{algorithm}[H]
+\caption{3-PhaseTime series Clustering model (3PTC) [62]}
+\begin{algorithmic}[1]
+\STATE 時系列に対して次元縮約(論文中ではSAXを使用)を行いクラスタリングし、サブクラスタを形成する(大雑把に計算することが目的)。
+\STATE 1で作成したクラスタ毎にプロトタイプを計算する。
+\STATE 各クラスタのセントロイドを用いてサブクラスタをマージする。
+\end{algorithmic}
+\end{algorithm}
+\end{frame}
+
+\begin{frame}\frametitle{マルチステップクラスタリング}
+\begin{algorithm}[H]
+\caption{Two-step Time series Clustering(TTC) [211]}
+\begin{algorithmic}[1]
+\STATE 時系列集合をユークリッド距離に基づいてクラスタリング。
+\STATE ステップ１によってできたクラスタリングのサブクラスタのセントロイドを用いて、k-Medroids法を行う(距離尺度はDTW)。
+\end{algorithmic}
+\end{algorithm}
+TTCは、ステップ2の入力データをあらかじめステップ1によって減らすことで計算時間のかかるDTWの計算回数を減らすことができる。精度の面でも従来の他のクラスタリングよりも優れていることが論文中に示されている。
+\end{frame}
+
+
+
+\section{Chapter6 Time-series clustering evaluation measures(クラスタリングの評価)}
+
+
+
+\begin{frame}\frametitle{クラスタリングの評価}
+KeoghやKasetty[6]は時系列マイニングの評価は以下に従うべきだと結論づけた。
+\begin{itemize}
+\item アルゴリズムの検証は、(アルゴリズムが特定のセットに対してのみ作成されない限り)さまざまなデータセットにおいて実行できる必要がある。また、使用したデートセットは自由に利用可能である必要がある。
+\item アルゴリズムの実装において、注意深く行い、実装のバイアスを避けなければならない。
+\item 可能であれば、データとアルゴリズムは無料で提供するべきである。
+\item 類似性測定の新しい手法を評価する場合、ユークリッド距離などの単純で安定した尺度と比較する必要がある。
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}\frametitle{クラスタリングの評価}
+クラスタリング結果をどのように評価するか？\newline
+\newline
+\begin{itemize}
+\item 一般に、抽出されたクラスタの評価は、あらかじめデータラベルがない場合には容易ではなく[26]、未解決の問題である。
+\item クラスタの定義(クラスタ数、クラスタサイズ、外れ値の定義など)は、ユーザ、ドメインに依存し、主観的。\\しかし、人間の判断またはそのデータの生成者によってあらかじめラベル付けされたデータを用いることで、クラスタリングを評価することができる。
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}\frametitle{評価指標の種類}
+\begin{itemize}
+\item クラスタリングを評価するために、視覚化、もしくはスカラー値(こちらを中心に取り扱う)で評価される。
+\item スカラー値で評価する方法はさらに、あらかじめラベル付けされたデータとの類似度を見るが外部指標、クラスタ自体の構造の良さを評価する内部指標の2つに分類される。
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}\frametitle{評価指標の種類}
+以下で、外部指標、内部指標について見ていく。
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale = 0.7]{decade_fig5.png}
+\end{center}
+\caption{評価指標のヒエラルキー 出典:''Time-series clustering - A decade review'' p. 31}
+\end{figure}
+\end{frame}
+
+
+\begin{frame}\frametitle{外部指標}
+外部指標・・・あらかじめ人の手によってラベル付けされたデータとクラスタリングによって付けられたラベルとの類似性を比較する。\\
+以下で、代表的な2つの外部指標について説明する。\\
+$G=\{G_1,G_2,...,G_M\}$を人の手によってラベル付けされたクラスタ、$C=\{C_1,C_2,...,C_M\}$をクラスタリングによってラベル付けされたクラスタとする。
+\begin{figure}[h]
+\begin{center}
+\includegraphics[scale = 0.7]{decade_fig6.png}
+\end{center}
+\caption{外部指標の評価 出典:''Time-series clustering - A decade review'' p. 31}
+\end{figure}
+\end{frame}
+
+
+
+\begin{frame}\frametitle{外部指標}
+purity・・・GとCを一致率が最も高くなるように比較し、その一致率を採用する。\\
+\begin{displaymath}
+purity = \frac{1}{M}\sum_{i}^{M}\max_{j}|C_i \cap G_j|
+\end{displaymath}
+\begin{itemize}
+\item 値は0～1を取り、1に近づくほどよいとされる。
+\item しかし、クラスタ数が大きいと、1に近づきやすいという欠点がある(指標の値は、クラスタの精度だけでなく、クラスタ数にも依存してしまう)。
+\end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{外部指標}
+Rand Index(RI)・・・任意の2つのデータが同じクラスタに属しているかどうかの確率を見る。\\
+以下のようにa,b,c,dを定義する。
+\begin{itemize}
+\item a・・・Gで同じクラスタに属しているかつ、Cで同じクラスタに属しているデータのペア数。
+\item b・・・Gで異なるクラスタに属しているかつ、Cで異なるクラスタに属しているデータのペア数。
+\item c・・・Gで同じクラスタに属しているかつ、Cで異なるクラスタに属しているデータのペア数。
+\item d・・・Gで異なるクラスタに属しているかつ、Cで同じクラスタに属しているデータのペア数。
+\end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{外部指標}
+このとき、
+\begin{displaymath}
+Rand Index = \frac{a+b}{a+b+c+d}
+\end{displaymath}
+となる。
+\begin{itemize}
+\item 値は0～1をとり、1に近づくほど良いとされる。
+\item しかし、2つのクラスタリング結果に相関が無いときにも値は一定にならない(0にならない)という欠点がある。
+\item Adjusted Rand Index(ARI)という指標は相関が無い場合に値が0になるように修正されている。
+\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}\frametitle{内部指標}
+内部指標・・・クラスタリングの構造の良さを測定するために用いられる。\\
+構造の良さの基準
+\begin{itemize}
+\item 同じクラスタに属しているデータは類似度が高い。
+\item 違うクラスタに属しているデータは類似度が低い。
+\end{itemize}
+しばしば、人の手でラベル付けすることが不可能である場合に用いられる。\\
+以下で、代表的な2つの指標を紹介する。
+
+\end{frame}
+
+
+
+\begin{frame}\frametitle{内部指標}
+Sum of Squared Error(SSE)・・・全てのデータについて、データとデータが属しているクラスタの中心との距離の総和。\\
+クラスタリングによって作られたクラスタを、$C=\{C_1,C_2,...,C_M\}$とすると、
+\begin{displaymath}
+SSE = \sum_{m=1}^{M} \sum_{x_i \in C_m} (\bar{x}_m - x_i)^2
+\end{displaymath}
+となる($\bar{x}_m$はクラスタ$m$のセントロイド)。\\
+\end{frame}
+
+
+\begin{frame}\frametitle{内部指標}
+Silhouette index(シルエット係数)・・・データ点とクラスタとの平均距離を基に計算する。\\
+\begin{itemize}
+\item データ点$x_i$と同じクラスタ内のデータとの平均距離を$a_i$とする(凝集度)。\\
+\item データ点$x_i$と最も近くにあるクラスタとの平均距離を$b_i$とする(乖離度)。\\
+\end{itemize}
+シルエット係数$s_i$は以下の式で計算できる。
+\begin{displaymath}
+s_i = \frac{b_i-a_i}{max\{b_i,a_i\}}
+\end{displaymath}
+\end{frame}
+
+
+\section{Chapter7 Conclusion}
+
+%\begin{frame}%{Conclusion}
+%\begin{itemize}
+%\item 時系列データの高次元性、特徴相関、大量のノイズは時系列クラスタリングにおける重要な研究の課題とされてきた。
+%\item 時系列クラスタリングに関わる研究は、主に以下の２つのサブルーチンに集中している。
+%\begin{itemize}
+%\item 従来のクラスタリングアルゴリズムに適用できるような、時系列データの次元削減。
+%\item 生の時系列及び変換後のデータの距離尺度。
+%\end{itemize}
+%\end{itemize}
+%\end{frame}
+
+
+\begin{frame}{近年の動向}
+時系列クラスタリングにおける4つの構成要素である次元削減、距離尺度、プロトタイプ、アルゴリズムについての近年の動向。
+\begin{description}
+\item[次元削減] \mbox{}\\さらなる次元削減メソッドは、多変量の時系列や、不均等にサンプルされたデータなどにも適用できるものがある。
+\item[距離尺度] \mbox{}\\時系列における多くの距離尺度はユークリッド距離よりも優れていない[6]。
+\item[プロトタイプ] \mbox{}\\プロトタイプに対する多くの研究は、データ平均やmedoidをプロトタイプとして用いる方法より優れていない。
+\item[アルゴリズム] \mbox{}\\多くのアルゴリズムは、時間がかかるが正確性が高いか、時間はかからないが正確性が低いかのどちらかである。
+\end{description}
+
+\end{frame}
+
+\begin{frame}{時系列クラスタリングの将来}
+作者は以上の動向(前ページ)を踏まえ、時系列クラスタリングにおいて、以下の結論を出している。\newline
+\newline
+時系列クラスタリングの4つの側面全てにおいて改善の余地はあるかもしれない。しかし、将来の研究において、主な研究は、既存もしくは新しいクラスタリングを用いて、新たなハイブリッドアルゴリズムに取り組むことである(計算量と精度のトレードオフを考慮しつつ)。
+
+\end{frame}
+
+
+\begin{frame}\frametitle{参考}
+https://www.sciencedirect.com/science/article/pii/S0306437915000733
+https://www.sciencedirect.com/science/article/pii/S0957417413006404
+https://www.hindawi.com/journals/tswj/2014/562194/
+
+http://gaya.jp/spiking\_neuron/som.htm
+https://ja.wikipedia.org/wiki/DBSCAN
+\end{frame}
+
+
+\end{document}
